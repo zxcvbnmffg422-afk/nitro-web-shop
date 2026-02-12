@@ -3,69 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="site-title">متجر نيترو</title>
+    <title id="store-title">جاري التحميل...</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style id="dynamic-style">
-        :root { --main-color: #00f2ff; --bg-color: #080a12; }
-        body { background: var(--bg-color); color: white; font-family: 'Cairo', sans-serif; margin: 0; }
-        .navbar { background: rgba(255,255,255,0.05); padding: 20px; text-align: center; border-bottom: 2px solid var(--main-color); }
-        .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .card { background: #111420; border-radius: 15px; overflow: hidden; border: 1px solid #222; transition: 0.3s; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .card-body { padding: 15px; text-align: center; }
-        .btn-buy { background: var(--main-color); color: black; border: none; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #ban-overlay { display: none; position: fixed; inset: 0; background: black; z-index: 10000; justify-content: center; align-items: center; font-size: 24px; color: red; text-align: center; }
+    <style id="theme-style">
+        :root { --main: #00f2ff; --bg: #080a12; --card: #111420; }
+        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; transition: 0.5s; }
+        .navbar { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--main); background: rgba(0,0,0,0.2); }
+        .hero-banner { height: 200px; background: linear-gradient(45deg, var(--bg), var(--main)); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
+        .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .product-card { background: var(--card); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative; }
+        .product-card img { width: 100%; height: 250px; object-fit: cover; }
+        .p-info { padding: 15px; text-align: center; }
+        .buy-btn { width: 100%; padding: 12px; background: var(--main); color: black; border: none; font-weight: bold; cursor: pointer; border-radius: 0 0 20px 20px; }
+        #ban-screen { display: none; position: fixed; inset: 0; background: black; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; color: red; }
     </style>
 </head>
 <body>
-
-    <div id="ban-overlay">⚠️ تم حظر هذا المتجر لمخالفته القوانين!</div>
+    <div id="ban-screen">
+        <i class="fas fa-exclamation-triangle fa-5x"></i>
+        <h1>هذا المتجر تم إغلاقه بواسطة المالك</h1>
+    </div>
 
     <nav class="navbar">
-        <h1 id="brand-name">نيترو ستور</h1>
+        <div id="store-name" style="font-size: 22px; font-weight: bold;">اسم المتجر</div>
+        <div class="cart-btn"><i class="fas fa-shopping-basket"></i></div>
     </nav>
 
-    <div class="container" id="product-list">
-        </div>
+    <div class="hero-banner" id="banner-text">أهلاً بكم في متجرنا</div>
+
+    <div class="container" id="products-area"></div>
 
     <script>
-        // دالة تحميل الإعدادات من لوحة التحكم
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('user_settings')) || {
-                name: "نيترو ستور",
-                color: "#00f2ff",
-                bg: "#080a12",
-                isBanned: false
-            };
+        const params = new URLSearchParams(window.location.search);
+        const shopID = params.get('id') || 'demo';
 
-            const products = JSON.parse(localStorage.getItem('user_products')) || [
-                {name: "منتج تجريبي 1", price: "10,000", img: "https://via.placeholder.com/300"}
-            ];
+        function loadStore() {
+            const data = JSON.parse(localStorage.getItem('shop_' + shopID));
+            if(!data) return;
 
-            // تطبيق الإعدادات
-            document.getElementById('site-title').innerText = settings.name;
-            document.getElementById('brand-name').innerText = settings.name;
-            document.documentElement.style.setProperty('--main-color', settings.color);
-            document.documentElement.style.setProperty('--bg-color', settings.bg);
-            
-            if(settings.isBanned) document.getElementById('ban-overlay').style.display = 'flex';
+            // إذا كان محظوراً
+            if(data.isBanned) {
+                document.getElementById('ban-screen').style.display = 'flex';
+                return;
+            }
 
-            // عرض المنتجات
-            const list = document.getElementById('product-list');
-            list.innerHTML = products.map(p => `
-                <div class="card">
+            // تطبيق الهوية (الألوان والأسماء)
+            document.title = data.name;
+            document.getElementById('store-name').innerText = data.name;
+            document.getElementById('banner-text').innerText = data.welcome;
+            document.documentElement.style.setProperty('--main', data.mainColor);
+            document.documentElement.style.setProperty('--bg', data.bgColor);
+
+            // تحميل المنتجات
+            const area = document.getElementById('products-area');
+            area.innerHTML = data.products.map(p => `
+                <div class="product-card">
                     <img src="${p.img}">
-                    <div class="card-body">
+                    <div class="p-info">
                         <h3>${p.name}</h3>
-                        <p style="color:var(--main-color)">${p.price} د.ع</p>
-                        <button class="btn-buy">اطلب الآن</button>
+                        <p style="color: var(--main)">${p.price} د.ع</p>
                     </div>
+                    <button class="buy-btn">شراء الآن</button>
                 </div>
             `).join('');
         }
-        
-        window.onload = loadSettings;
+        window.onload = loadStore;
     </script>
 </body>
 </html>
-
