@@ -1,14 +1,70 @@
-const urlParams = new URLSearchParams(window.location.search);
-const userId = urlParams.get('id') || 'default'; // يجلب اسم الزبون من الرابط
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة متجرك - Nitro</title>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
+        .panel { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .section { margin-bottom: 25px; padding: 15px; border: 1px solid #eee; border-radius: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .color-group { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h2>🛠️ إعدادات المتجر الاحترافية</h2>
+        
+        <div class="section">
+            <h3>🎨 الهوية والبصمة</h3>
+            <input type="text" id="s-name" placeholder="اسم المتجر الجديد">
+            <input type="text" id="s-welcome" placeholder="رسالة الترحيب (البانر)">
+            <div class="color-group">
+                <label>اللون الأساسي: <input type="color" id="s-main" value="#00f2ff"></label>
+                <label>لون الخلفية: <input type="color" id="s-bg" value="#080a12"></label>
+            </div>
+        </div>
 
-function saveSettings() {
-    const settings = {
-        name: document.getElementById('store-name').value,
-        color: document.getElementById('store-color').value,
-        bg: document.getElementById('store-bg').value,
-        isBanned: false
-    };
-    // الحفظ باستخدام معرف الزبون لكي لا تختلط البيانات
-    localStorage.setItem('settings_' + userId, JSON.stringify(settings));
-    alert("تم حفظ إعدادات متجرك الخاص يا " + userId);
-}
+        <div class="section">
+            <h3>📦 إضافة منتجات جديدة</h3>
+            <input type="text" id="p-name" placeholder="اسم المنتج">
+            <input type="text" id="p-price" placeholder="السعر">
+            <input type="text" id="p-img" placeholder="رابط الصورة المباشر">
+            <button onclick="addProduct()" style="background: #28a745;">+ إضافة للمتجر</button>
+        </div>
+
+        <button onclick="saveAll()">✅ حفظ وتفعيل التغييرات فوراً</button>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const shopID = params.get('id');
+        let products = [];
+
+        function addProduct() {
+            const n = document.getElementById('p-name').value;
+            const pr = document.getElementById('p-price').value;
+            const im = document.getElementById('p-img').value;
+            if(n) {
+                products.push({name: n, price: pr, img: im});
+                alert("تمت إضافة المنتج للقائمة");
+            }
+        }
+
+        function saveAll() {
+            const data = {
+                id: shopID,
+                name: document.getElementById('s-name').value || "متجري",
+                welcome: document.getElementById('s-welcome').value,
+                mainColor: document.getElementById('s-main').value,
+                bgColor: document.getElementById('s-bg').value,
+                products: products,
+                isBanned: false
+            };
+            localStorage.setItem('shop_' + shopID, JSON.stringify(data));
+            alert("تم تحديث متجرك بنجاح! الرابط: index.html?id=" + shopID);
+        }
+    </script>
+</body>
+</html>
