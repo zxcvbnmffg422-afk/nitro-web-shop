@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة تحكم الزبون</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; direction: rtl; }
+        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>⚙️ إعدادات متجرك</h2>
+        <input type="text" id="store-name" placeholder="اسم المتجر">
+        <label>لون الهوية:</label>
+        <input type="color" id="store-color" value="#00f2ff">
+        <label>لون الخلفية:</label>
+        <input type="color" id="store-bg" value="#080a12">
+        <hr>
+        <h3>➕ إضافة منتج</h3>
+        <input type="text" id="p-name" placeholder="اسم المنتج">
+        <input type="text" id="p-price" placeholder="السعر">
+        <input type="text" id="p-img" placeholder="رابط الصورة">
+        <button onclick="saveSettings()">حفظ التعديلات ونشرها</button>
+    </div>
+
+    <script>
+        function saveSettings() {
+            const settings = {
+                name: document.getElementById('store-name').value,
+                color: document.getElementById('store-color').value,
+                bg: document.getElementById('store-bg').value,
+                isBanned: false
+            };
+            localStorage.setItem('user_settings', JSON.stringify(settings));
+            
+            // إضافة منتج
+            let products = JSON.parse(localStorage.getItem('user_products')) || [];
+            const newP = {
+                name: document.getElementById('p-name').value,
+                price: document.getElementById('p-price').value,
+                img: document.getElementById('p-img').value
+            };
+            if(newP.name) products.push(newP);
+            localStorage.setItem('user_products', JSON.stringify(products));
+
+            alert("تم تحديث متجرك بنجاح! اذهب لمشاهدة التغييرات.");
+        }
+    </script>
+</body>
+</html>
